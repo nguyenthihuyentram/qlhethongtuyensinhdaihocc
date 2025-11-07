@@ -1,0 +1,34 @@
+import os
+
+def check_project_folder():
+    print("🔍 Kiểm tra thư mục dự án...")
+    
+    required_files = ['app.py', 'tuyensinh.db']
+    required_folders = ['templates']
+    
+    current_dir = os.getcwd()
+    print(f"📁 Thư mục hiện tại: {current_dir}")
+    
+    # Kiểm tra file
+    missing_files = []
+    for file in required_files:
+        if not os.path.exists(file):
+            missing_files.append(file)
+    
+    # Kiểm tra folder
+    missing_folders = []
+    for folder in required_folders:
+        if not os.path.exists(folder):
+            missing_folders.append(folder)
+    
+    if not missing_files and not missing_folders:
+        print("✅ Bạn đang ở ĐÚNG thư mục dự án!")
+        return True
+    else:
+        print("❌ Bạn đang ở SAI thư mục!")
+        print("   Thiếu files:", missing_files)
+        print("   Thiếu folders:", missing_folders)
+        return False
+
+# Chạy kiểm tra
+check_project_folder()

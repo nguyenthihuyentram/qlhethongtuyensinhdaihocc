@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hệ thống Tuyển sinh</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
+        .sidebar { background: var(--primary); color: white; width: 250px; height: 100vh; position: fixed; padding: 20px; }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .logo { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #34495e; }
+        .nav-item { padding: 12px 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+        .nav-item:hover { background: #34495e; }
+        .nav-item.active { background: var(--secondary); }
+        .nav-item i { margin-right: 10px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card h3 { color: #7f8c8d; margin-bottom: 10px; }
+        .stat-number { font-size: 2em; font-weight: bold; }
+        .bg-primary { background: var(--primary)!important; color: white; }
+        .bg-success { background: var(--success)!important; color: white; }
+        .bg-warning { background: var(--warning)!important; color: white; }
+        .bg-danger { background: var(--danger)!important; color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h2>🎓 Tuyển Sinh</h2>
+            <small>Hệ thống Quản lý</small>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="loadPage('')"><i>📊</i> Dashboard</div>
+            <div class="nav-item" onclick="loadPage('quanly_thisinh')"><i>👥</i> Quản lý Thí sinh</div>
+            <div class="nav-item" onclick="loadPage('quanly_nganh')"><i>📚</i> Ngành học</div>
+            <div class="nav-item" onclick="loadPage('tracuu')"><i>🔍</i> Tra cứu</div>
+            <div class="nav-item" onclick="loadPage('baocao')"><i>📈</i> Báo cáo</div>
+            <div class="nav-item" onclick="logout()"><i>🚪</i> Đăng xuất</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Chào mừng, <span id="userName">{{ session.full_name }}</span>!</h1>
+            <div>Vai trò: <strong>{{ session.role }}</strong></div>
+        </div>
+
+        <div id="pageContent">
+            <div class="stats" id="dashboardStats">
+                <!-- Stats will be loaded by JavaScript -->
+            </div>
+            
+            <div class="quick-actions">
+                <h2>Thao tác nhanh</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <button class="stat-card" onclick="loadPage('quanly_thisinh')" style="cursor: pointer;">
+                        <h3>👥 Thêm thí sinh</h3>
+                    </button>
+                    <button class="stat-card" onclick="loadPage('tracuu')" style="cursor: pointer;">
+                        <h3>🔍 Tra cứu</h3>
+                    </button>
+                    <button class="stat-card" onclick="loadPage('baocao')" style="cursor: pointer;">
+                        <h3>📈 Báo cáo</h3>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadPage(page) {
+            window.location.href = '/' + page;
+        }
+        
+        function logout() {
+            if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                window.location.href = '/logout';
+            }
+        }
+        
+        // Load thống kê
+        fetch('/api/thongke')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('dashboardStats').innerHTML = `
+                        <div class="stat-card bg-primary">
+                            <h3>Tổng thí sinh</h3>
+                            <div class="stat-number">${data.tong_thisinh}</div>
+                        </div>
+                        <div class="stat-card bg-success">
+                            <h3>Đã duyệt</h3>
+                            <div class="stat-number">${data.tong_da_duyet}</div>
+                        </div>
+                        <div class="stat-card bg-warning">
+                            <h3>Chờ duyệt</h3>
+                            <div class="stat-number">${data.tong_chua_duyet}</div>
+                        </div>
+                        <div class="stat-card bg-danger">
+                            <h3>Đã thanh toán</h3>
+                            <div class="stat-number">${data.tong_da_thanhtoan}</div>
+                        </div>
+                    `;
+                }
+            });
+    </script>
+</body>
+</html>

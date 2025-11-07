@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu Thí sinh</title>
+    <style>
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .info-item { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>🔍 Tra cứu Thông tin Thí sinh</h2>
+            <div class="form-group">
+                <label>Nhập CMND/CCCD của thí sinh:</label>
+                <input type="text" id="cmndInput" placeholder="Ví dụ: 001123456789">
+            </div>
+            <button class="btn" onclick="tracuu()">🔍 Tra cứu</button>
+        </div>
+
+        <div class="card" id="ketQuaTraCuu" style="display: none;">
+            <h3>📋 Kết quả tra cứu</h3>
+            <div id="thongTinThisinh"></div>
+        </div>
+    </div>
+
+    <script>
+        function tracuu() {
+            const cmnd = document.getElementById('cmndInput').value.trim();
+            if (!cmnd) {
+                alert('Vui lòng nhập CMND/CCCD');
+                return;
+            }
+
+            fetch('/api/tracuu/' + cmnd)
+                .then(r => r.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('ketQuaTraCuu');
+                    const infoDiv = document.getElementById('thongTinThisinh');
+                    
+                    if (data.success) {
+                        const ts = data.thisinh;
+                        let html = `
+                            <div class="info-item">
+                                <strong>Mã thí sinh:</strong> ${ts.ma_thisinh}
+                            </div>
+                            <div class="info-item">
+                                <strong>Họ tên:</strong> ${ts.ho_ten}
+                            </div>
+                            <div class="info-item">
+                                <strong>CMND:</strong> ${ts.cmnd}
+                            </div>
+                            <div class="info-item">
+                                <strong>Ngày sinh:</strong> ${ts.ngay_sinh}
+                            </div>
+                            <div class="info-item">
+                                <strong>Giới tính:</strong> ${ts.gioi_tinh}
+                            </div>
+                            <div class="info-item">
+                                <strong>Trạng thái:</strong> <span style="color: ${ts.trang_thai === 'Đã duyệt' ? 'green' : 'orange'}; font-weight: bold;">${ts.trang_thai}</span>
+                            </div>
+                        `;
+
+                        if (data.nguyenvong && data.nguyenvong.length > 0) {
+                            html += `<div class="info-item"><strong>Nguyện vọng:</strong><ul>`;
+                            data.nguyenvong.forEach(nv => {
+                                html += `<li>${nv.ten_nganh} - Điểm: ${nv.diem_thi || 'Chưa có'}</li>`;
+                            });
+                            html += `</ul></div>`;
+                        }
+
+                        if (data.thanhtoan) {
+                            html += `<div class="info-item">
+                                <strong>Thanh toán:</strong> ${data.thanhtoan.trang_thai} - ${data.thanhtoan.so_tien} VND
+                            </div>`;
+                        }
+
+                        infoDiv.innerHTML = html;
+                        resultDiv.style.display = 'block';
+                    } else {
+                        infoDiv.innerHTML = `<div style="color: red; text-align: center;">❌ ${data.message}</div>`;
+                        resultDiv.style.display = 'block';
+                    }
+                });
+        }
+
+        // Cho phép nhấn Enter để tra cứu
+        document.getElementById('cmndInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                tracuu();
+            }
+        });
+    </script>
+</body>
+</html>

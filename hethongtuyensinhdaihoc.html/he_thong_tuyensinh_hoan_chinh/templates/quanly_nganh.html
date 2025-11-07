@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Ngành học</title>
+    <style>
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn-primary { background: #3498db; color: white; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>📚 Quản lý Ngành học</h2>
+            <button class="btn btn-primary" onclick="showForm()">➕ Thêm ngành học</button>
+        </div>
+
+        <div class="card">
+            <div id="danhSachNganh"></div>
+        </div>
+
+        <!-- Form thêm ngành học -->
+        <div class="card" id="formNganh" style="display: none;">
+            <h3>Thêm ngành học mới</h3>
+            <form id="formThemNganh">
+                <div class="form-group">
+                    <label>Mã ngành *</label>
+                    <input type="text" id="maNganh" required>
+                </div>
+                <div class="form-group">
+                    <label>Tên ngành *</label>
+                    <input type="text" id="tenNganh" required>
+                </div>
+                <div class="form-group">
+                    <label>Chỉ tiêu *</label>
+                    <input type="number" id="chiTieu" required>
+                </div>
+                <div class="form-group">
+                    <label>Điểm chuẩn</label>
+                    <input type="number" step="0.1" id="diemChuan">
+                </div>
+                <button type="submit" class="btn btn-primary">💾 Lưu ngành học</button>
+                <button type="button" class="btn" onclick="hideForm()">❌ Hủy</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function loadDanhSachNganh() {
+            fetch('/api/nganh_hoc')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        let html = `<table>
+                            <thead>
+                                <tr>
+                                    <th>Mã ngành</th>
+                                    <th>Tên ngành</th>
+                                    <th>Chỉ tiêu</th>
+                                    <th>Điểm chuẩn</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                        
+                        data.data.forEach(nganh => {
+                            html += `
+                                <tr>
+                                    <td>${nganh.ma_nganh}</td>
+                                    <td>${nganh.ten_nganh}</td>
+                                    <td>${nganh.chi_tieu}</td>
+                                    <td>${nganh.diem_chuan || 'Chưa có'}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += '</tbody></table>';
+                        document.getElementById('danhSachNganh').innerHTML = html;
+                    }
+                });
+        }
+
+        function showForm() {
+            document.getElementById('formNganh').style.display = 'block';
+        }
+
+        function hideForm() {
+            document.getElementById('formNganh').style.display = 'none';
+            document.getElementById('formThemNganh').reset();
+        }
+
+        document.getElementById('formThemNganh').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                ma_nganh: document.getElementById('maNganh').value,
+                ten_nganh: document.getElementById('tenNganh').value,
+                chi_tieu: parseInt(document.getElementById('chiTieu').value),
+                diem_chuan: parseFloat(document.getElementById('diemChuan').value) || null
+            };
+
+            fetch('/api/nganh_hoc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    hideForm();
+                    loadDanhSachNganh();
+                }
+            });
+        });
+
+        // Load danh sách khi trang được tải
+        window.onload = loadDanhSachNganh;
+    </script>
+</body>
+</html>

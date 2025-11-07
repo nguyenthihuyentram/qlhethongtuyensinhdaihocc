@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống Tuyển sinh</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #2c3e50; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .btn { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center; }
+        .error { background: #ffeaa7; color: #d63031; }
+        .demo-accounts { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎓 Hệ thống Tuyển sinh</h1>
+            <p>Đăng nhập để tiếp tục</p>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>Tên đăng nhập:</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu:</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Đăng nhập</button>
+        </form>
+        
+        <div class="demo-accounts">
+            <strong>Tài khoản demo:</strong><br>
+            👨‍💼 Admin: admin / admin123<br>
+            👩‍💼 Nhân viên: tuyensinh / ts123
+        </div>
+    </div>
+</body>
+</html>

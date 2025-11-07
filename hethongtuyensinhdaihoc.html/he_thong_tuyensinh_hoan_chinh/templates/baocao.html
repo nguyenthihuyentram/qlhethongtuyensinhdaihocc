@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Thống kê</title>
+    <style>
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .stat-item { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; margin: 10px 0; }
+        .chart-container { height: 300px; margin: 20px 0; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>📈 Báo cáo Thống kê Tuyển sinh</h2>
+            <button class="btn" onclick="loadThongKe()">🔄 Tải lại dữ liệu</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 Tổng quan</h3>
+            <div class="stats-grid" id="tongQuanStats"></div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Thống kê theo Trạng thái</h3>
+            <canvas id="chartTrangThai" class="chart-container"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>🎯 Thống kê theo Ngành học</h3>
+            <canvas id="chartNganh" class="chart-container"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let chartTrangThai, chartNganh;
+
+        function loadThongKe() {
+            fetch('/api/thongke')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        // Tổng quan
+                        document.getElementById('tongQuanStats').innerHTML = `
+                            <div class="stat-item" style="background: #3498db; color: white;">
+                                <div>Tổng thí sinh</div>
+                                <div class="stat-number">${data.tong_thisinh}</div>
+                            </div>
+                            <div class="stat-item" style="background: #27ae60; color: white;">
+                                <div>Đã duyệt</div>
+                                <div class="stat-number">${data.tong_da_duyet}</div>
+                            </div>
+                            <div class="stat-item" style="background: #f39c12; color: white;">
+                                <div>Chờ duyệt</div>
+                                <div class="stat-number">${data.tong_chua_duyet}</div>
+                            </div>
+                            <div class="stat-item" style="background: #e74c3c; color: white;">
+                                <div>Đã thanh toán</div>
+                                <div class="stat-number">${data.tong_da_thanhtoan}</div>
+                            </div>
+                        `;
+
+                        // Biểu đồ trạng thái
+                        const ctx1 = document.getElementById('chartTrangThai').getContext('2d');
+                        if (chartTrangThai) chartTrangThai.destroy();
+                        
+                        chartTrangThai = new Chart(ctx1, {
+                            type: 'pie',
+                            data: {
+                                labels: Object.keys(data.thongke_trangthai),
+                                datasets: [{
+                                    data: Object.values(data.thongke_trangthai),
+                                    backgroundColor: ['#3498db', '#27ae60', '#f39c12', '#e74c3c']
+                                }]
+                            }
+                        });
+
+                        // Biểu đồ ngành học
+                        const ctx2 = document.getElementById('chartNganh').getContext('2d');
+                        if (chartNganh) chartNganh.destroy();
+                        
+                        const labels = data.thongke_nganh.map(n => n.ten_nganh);
+                        const values = data.thongke_nganh.map(n => n.so_nguyenvong);
+                        
+                        chartNganh = new Chart(ctx2, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Số nguyện vọng',
+                                    data: values,
+                                    backgroundColor: '#3498db'
+                                }]
+                            }
+                        });
+                    }
+                });
+        }
+
+        // Tải dữ liệu khi trang được tải
+        window.onload = loadThongKe;
+    </script>
+</body>
+</html>
